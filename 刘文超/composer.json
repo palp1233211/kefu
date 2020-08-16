@@ -1,7 +1,0 @@
-{
-    "require": {
-        "workerman/workerman": "^4.0",
-        "workerman/gatewayclient": "^3.0",
-        "workerman/gateway-worker": "^3.0"
-    }
-}
