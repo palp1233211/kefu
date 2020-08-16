@@ -1,0 +1,602 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="stylesheet" type="text/css" href="/web/font_Icon/iconfont.css">
+    <link rel="stylesheet" type="text/css" href="/web/css/chat.css">
+    <script src="/web/js/jquery.min.js"></script>
+
+</head>
+<body>
+
+<div class="chatContainer">
+    <div class="chatBtn">
+        <i class="iconfont icon-xiaoxi1"></i>
+    </div>
+    <div class="chat-message-num">10</div>
+    <div class="chatBox" ref="chatBox">
+        <div class="chatBox-head">
+            <div class="chatBox-head-one">
+                <!-- Conversations -->
+                <span id="username">Conversations</span>
+                <div class="chat-close" style="margin: 10px 10px 0 0;font-size: 14px">关闭</div>
+            </div>
+            <div class="chatBox-head-two">
+                <div class="chat-return">返回</div>
+                <div class="chat-people">
+                    <div class="ChatInfoHead">
+                        <img src="" alt="头像"/>
+                    </div>
+                    <div class="ChatInfoName">这是用户的名字，看看名字到底能有多长</div>
+                </div>
+                <div class="chat-close">关闭</div>
+            </div>
+        </div>
+        <div class="chatBox-info">
+            <div class="chatBox-list" ref="chatBoxlist" id="userList">
+
+               <!--  <div class="chat-list-people">
+                    <div><img src="img/icon01.png" alt="头像"/></div>
+                    <div class="chat-name">
+                        <p>自酌一杯酒</p>
+                        <input type="hidden" name="">
+                    </div>
+                    <div class="message-num">10</div>
+                </div>
+      -->
+            </div>
+            <div class="chatBox-kuang" ref="chatBoxkuang">
+                <div class="chatBox-content">
+                    <div class="chatBox-content-demo" id="chatBox-content-demo">
+
+                        <div class="clearfloat">
+                            <div class="author-name">
+                                <small class="chat-date">2017-12-02 14:26:58</small>
+                            </div>
+                            <div class="left">
+                                <div class="chat-avatars"><img src="/web/img/icon01.png" alt="头像"/></div>
+                                <div class="chat-message">
+                                    给你看张图
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="clearfloat">
+                            <div class="author-name">
+                                <small class="chat-date">2017-12-02 14:26:58</small>
+                            </div>
+                            <div class="left">
+                                <div class="chat-avatars"><img src="/web/img/icon01.png" alt="头像"/></div>
+                                <div class="chat-message">
+                                    <img src="/web/img/1.png" alt="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="clearfloat">
+                            <div class="author-name">
+                                <small class="chat-date">2017-12-02 14:26:58</small>
+                            </div>
+                            <div class="right">
+                                <div class="chat-message">嗯，适合做壁纸</div>
+                                <div class="chat-avatars"><img src="/web/img/icon02.png" alt="头像"/></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="chatBox-send">
+                    <div class="div-textarea" contenteditable="true"></div>
+                    <div>
+                        <button id="chat-biaoqing" class="btn-default-styles">
+                            <i class="iconfont icon-biaoqing"></i>
+                        </button>
+                        <label id="chat-tuxiang" title="发送图片" for="inputImage" class="btn-default-styles">
+                            <input type="file" onchange="selectImg(this)" accept="image/jpg,image/jpeg,image/png"
+                                   name="file" id="inputImage" class="hidden">
+                            <i class="iconfont icon-tuxiang"></i>
+                        </label>
+                        <button id="chat-fasong" class="btn-default-styles"><i class="iconfont icon-fasong"></i>
+                        </button>
+                    </div>
+                    <div class="biaoqing-photo">
+                        <ul>
+                            <li><span class="emoji-picker-image" style="background-position: -9px -18px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -40px -18px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -71px -18px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -102px -18px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -133px -18px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -164px -18px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -9px -52px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -40px -52px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -71px -52px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -102px -52px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -133px -52px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -164px -52px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -9px -86px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -40px -86px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -71px -86px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -102px -86px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -133px -86px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -164px -86px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -9px -120px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -40px -120px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -71px -120px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -102px -120px;"></span>
+                            </li>
+                            <li><span class="emoji-picker-image" style="background-position: -133px -120px;"></span>
+                            </li>
+                            <li><span class="emoji-picker-image" style="background-position: -164px -120px;"></span>
+                            </li>
+                            <li><span class="emoji-picker-image" style="background-position: -9px -154px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -40px -154px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -71px -154px;"></span></li>
+                            <li><span class="emoji-picker-image" style="background-position: -102px -154px;"></span>
+                            </li>
+                            <li><span class="emoji-picker-image" style="background-position: -133px -154px;"></span>
+                            </li>
+                            <li><span class="emoji-picker-image" style="background-position: -164px -154px;"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    
+    let uid       = getCookie('id');
+    let name      = getCookie('name');
+    let identity  = getCookie('identity');
+    let username  = getCookie('username');
+    let token     = getCookie('token'); 
+    let gid       = 0;
+    let is_socket = false ;//socket是否建立成功
+    if (username) {
+        $('#username').text(username);
+    } 
+
+    const CODE = {
+        'SUCCESS':1, //成功
+        'ERROR':0, //失败
+        'ISLOGIN':3,//验证登录
+        'SERVERMSG':4,//接收服务端文本消息
+        'CLIENTMSG':5,//客户端发送文本消息
+        'CLIENTGETMSG':6,//客户端发送获取用户间的历史聊天记录的请求
+        'SERVERSETMSG':7,//服务端发送用户间的历史聊天消息
+        'ISKICKED':8,//验证用户是否已经被踢
+        
+        'TEXTMSG':10,//文本消息
+        'IMGMSG':11,//图片消息
+        'CLIENTCLOSE':13,//用户离线通知
+        'CLIENTCONTENT':14,//用户上线通知
+        'PINGINTERVAL'  :20, //心跳检测
+
+    };
+
+    function getCookie(cname)
+    {
+      var name = cname + "=";
+      var ca = document.cookie.split(';');
+      for(var i=0; i<ca.length; i++) 
+      {
+        var c = ca[i].trim();
+        if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+      }
+      return "";
+    }
+    
+    var ws = new WebSocket("ws://212.64.71.48:2345");
+      
+    ws.onopen = function()
+    {
+      // Web Socket 已连接上，使用 send() 方法发送数据
+      let data = {'key':name,'uid':uid,code:CODE.ISLOGIN,identity};
+      console.log(data)
+      ws.send(JSON.stringify(data));
+      //建立成功改变is_socket状态
+      is_socket = true;
+    };
+
+    ws.onmessage = function (evt) 
+    { 
+      var received_msg = JSON.parse(evt.data);
+      switch (+received_msg.code) {
+            case CODE.ERROR:
+                //用户未登录
+                $('.chatContainer').html('');
+                alert('登录失败') 
+                relogin();
+                break;
+            case CODE.SUCCESS:
+                let str = '';
+                console.log(received_msg.data)
+                received_msg.data.forEach(function(item){
+                    str += '<div class="chat-list-people">'+
+                    '<div><img src="/web/img/icon01.png" alt="头像"/></div>'+
+                    '<div class="chat-name">'+
+                    '    <p id=user_'+ item.id +'>'+item.name ;
+
+                    if (item.status == 1) {
+                        str += '(在线)'
+                    }else{
+                        str += '(离线)'
+                    }
+
+                    str += '</p>'+
+                        '<input type="hidden" value="'+item.id+'">'+
+                    '</div>'+
+                    '<div class="message-num">10</div>'+
+                    '</div>'
+                })
+               
+                $("#userList").append(str)
+                //添加点击事件
+                clickPeople();
+                break;
+            case CODE.SERVERMSG:
+                console.log(received_msg)
+                
+                if (received_msg.type == CODE.TEXTMSG) {
+                    text_msg(received_msg)
+                }
+                break;
+            case CODE.SERVERSETMSG:
+                //服务端发送过来的，用户间的聊天记录
+                isMsg(received_msg.data)
+                break;
+            case CODE.CLIENTCLOSE:
+                
+                 //用户离线修改用户页面状态
+                reuser_status(received_msg.uid,0);
+                break;
+                
+            case CODE.CLIENTCONTENT:
+                //用户上线修改用户页面状态
+                reuser_status(received_msg.uid,1);
+                break;
+            case CODE.PINGINTERVAL:
+                //心跳数据无需处理
+                break;
+        }
+        
+      console.log("数据已接收...");
+    };
+
+    ws.onclose = function()
+    { 
+      // 关闭 websocket
+      // socket连接已关闭禁止调用websocket
+        is_socket = false
+        alert('与服务器断开连接，请重新登录！')
+        console.log("连接已关闭..."); 
+    };
+
+
+ 
+
+    screenFuc();
+    function screenFuc() {
+        var topHeight = $(".chatBox-head").innerHeight();//聊天头部高度
+        //屏幕小于768px时候,布局change
+        var winWidth = $(window).innerWidth();
+        if (winWidth <= 768) {
+            var totalHeight = $(window).height(); //页面整体高度
+            $(".chatBox-info").css("height", totalHeight - topHeight);
+            var infoHeight = $(".chatBox-info").innerHeight();//聊天头部以下高度
+            //中间内容高度
+            $(".chatBox-content").css("height", infoHeight - 46);
+            $(".chatBox-content-demo").css("height", infoHeight - 46);
+
+            $(".chatBox-list").css("height", totalHeight - topHeight);
+            $(".chatBox-kuang").css("height", totalHeight - topHeight);
+            $(".div-textarea").css("width", winWidth - 106);
+        } else {
+            $(".chatBox-info").css("height", 495);
+            $(".chatBox-content").css("height", 448);
+            $(".chatBox-content-demo").css("height", 448);
+            $(".chatBox-list").css("height", 495);
+            $(".chatBox-kuang").css("height", 495);
+            $(".div-textarea").css("width", 260);
+        }
+    }
+    (window.onresize = function () {
+        screenFuc();
+    })();
+    //未读信息数量为空时
+    var totalNum = $(".chat-message-num").html();
+    if (totalNum == "") {
+        $(".chat-message-num").css("padding", 0);
+    }
+    $(".message-num").each(function () {
+        var wdNum = $(this).html();
+        if (wdNum == "") {
+            $(this).css("padding", 0);
+        }
+    });
+
+
+    //打开/关闭聊天框
+    $(".chatBtn").click(function () {
+        $(".chatBox").toggle(10);
+    })
+    $(".chat-close").click(function () {
+        $(".chatBox").toggle(10);
+    })
+    //进聊天页面
+    function clickPeople(){
+        $(".chat-list-people").each(function () {
+            $(this).click(function () {
+                var n = $(this).index();
+                $(".chatBox-head-one").toggle();
+                $(".chatBox-head-two").toggle();
+                $(".chatBox-list").fadeToggle();
+                $(".chatBox-kuang").fadeToggle();
+                $(".chatBox-content-demo").html('')
+                //传名字
+                $(".ChatInfoName").text($(this).children(".chat-name").children("p").eq(0).html());
+
+                //传头像
+                $(".ChatInfoHead>img").attr("src", $(this).children().eq(0).children("img").attr("src"));
+                //获取聊天的id
+                gid = $(this).children(".chat-name").children("input").eq(0).val()
+                console.log(gid)
+                //聊天框默认最底部
+                $(document).ready(function () {
+                    $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+                });
+                
+                if (is_socket) {
+                    let data = {code:CODE.CLIENTGETMSG,uid,gid};
+                    console.log(data)
+                    ws.send(JSON.stringify(data));
+                }
+                
+
+            })
+        });
+    }
+
+    clickPeople();
+
+
+    //返回列表
+    $(".chat-return").click(function () {
+        $(".chatBox-head-one").toggle(1);
+        $(".chatBox-head-two").toggle(1);
+        $(".chatBox-list").fadeToggle(1);
+        $(".chatBox-kuang").fadeToggle(1);
+    });
+
+    //      发送信息
+    $("#chat-fasong").click(function () {
+        var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
+        textContent = msgFliter(textContent)
+        let create_date = Format('yyyy-MM-dd hh:mm:ss')
+        if (textContent != "") {
+            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">"+ create_date +"</small> </div> " +
+                "<div class=\"right\"> <div class=\"chat-message\"> " + textContent + " </div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            //发送后清空输入框
+            $(".div-textarea").html("");
+            
+            if (is_socket) {
+                let data = {code:CODE.CLIENTMSG,uid,gid,textContent,type:CODE.TEXTMSG,create_date};
+                console.log(data)
+                ws.send(JSON.stringify(data));
+            }
+
+            //聊天框默认最底部
+            $(document).ready(function () {
+                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+            });
+        }else{
+            alert('不能为空，特殊数据会被过滤！')      
+        }
+    });
+
+    //      发送表情
+    $("#chat-biaoqing").click(function () {
+        $(".biaoqing-photo").toggle();
+    });
+    $(document).click(function () {
+        $(".biaoqing-photo").css("display", "none");
+    });
+    $("#chat-biaoqing").click(function (event) {
+        event.stopPropagation();//阻止事件
+    });
+
+    $(".emoji-picker-image").each(function () {
+        $(this).click(function () {
+            var bq = $(this).parent().html();
+            console.log(bq)
+            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
+                "<div class=\"right\"> <div class=\"chat-message\"> " + bq + " </div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            //发送后关闭表情框
+            $(".biaoqing-photo").toggle();
+            //聊天框默认最底部
+            $(document).ready(function () {
+                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+            });
+        })
+    });
+
+    //      发送图片
+    function selectImg(pic) {
+        if (!pic.files || !pic.files[0]) {
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (evt) {
+            var images = evt.target.result;
+            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
+                "<div class=\"right\"> <div class=\"chat-message\"><img src=" + images + "></div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            //聊天框默认最底部
+            $(document).ready(function () {
+                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+            });
+        };
+        reader.readAsDataURL(pic.files[0]);
+
+    }
+
+
+    // 渲染 用户历史聊天记录
+    function isMsg(data){
+        
+        if (!data || data.constructor != Array) {
+            return false;
+        }
+
+        data.forEach((item)=>{
+
+            if (item.constructor == String) {
+                item = JSON.parse(item)
+            }
+
+ //明天来啦，吧数据库的消息状态改成10 ， 11 ， 12 要和页面的code中的状态码相对应
+            if (item.type == CODE.TEXTMSG) {
+                text_msg(item)
+            }
+            $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+
+        })
+    }
+    //渲染文本消息
+    function text_msg(item){
+        console.log(item)
+        if (item.uid == uid) {
+                $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
+                "<div class=\"right\"> <div class=\"chat-message\"> " + item.textContent + " </div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            }else{
+                 $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
+                "<div class=\"left\"> <div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div><div class=\"chat-message\"> " + item.textContent + " </div> " +
+                " </div> </div>");
+            }
+    }
+    //渲染图片消息
+    function img_msg(item){
+        console.log(item)
+        if (item.uid == uid) {
+                $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
+                "<div class=\"right\"> <div class=\"chat-message\"><img src=" + item.textContent + "></div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            }else{
+                 $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
+                "<div class=\"left\"><div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> " +
+                "<div class=\"chat-message\"><img src=" +  item.textContent  + "></div> " +
+                " </div> </div>");
+            }
+    }
+    //退出登录
+    function relogin(){
+        //清空cookie
+        delAllCookie();
+        //跳入登录页面
+        window.location.href='/web/login.html';
+         
+    }
+    //清空cookie
+    function delAllCookie(){    
+            var myDate=new Date();    
+            myDate.setTime(-1000);//设置时间    
+            var data=document.cookie;    
+            var dataArray=data.split("; ");    
+            for(var i=0;i<dataArray.length;i++){    
+                 var varName=dataArray[i].split("=");    
+                 document.cookie=varName[0]+"=''; expires="+myDate.toGMTString();    
+            }    
+                          
+      } 
+
+    //验证用户是否在其他地方登录
+    function is_kicked(){
+        let list = {code:CODE.ISKICKED,id:uid,token}
+        let data = JSON.stringify({'code':CODE.PINGINTERVAL,'msg':''});
+        $.ajax({
+                'url':'iskicked',
+                'type':'POST',
+                'data':list,
+                success:function (e) {
+                    e = JSON.parse(e)
+                    if (+e.code == CODE.ERROR){
+                        alert(e.msg); 
+                        relogin()
+                    }
+                }
+            })
+        if(is_socket){
+            ws.send(data);
+        }
+        
+        
+    }
+    //每10s验证一下用户是否已在其他地方登录
+    setInterval(is_kicked, 10000)
+
+    //修改用户在线状态
+    function reuser_status(uid,status){
+        let text = $('#user_'+uid).html()
+        let replace = status ? '(在线)' : '(离线)'
+        if (text) {
+            text = text.replace(/\((.*)\)/ig,replace)
+            console.log(text)
+            console.log(replace)
+            $('#user_'+uid).html(text)
+        }
+        
+    }
+
+
+// 对Date的扩展，将 Date 转化为指定格式的String
+// 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
+// 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
+// 例子：
+// (new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
+// (new Date()).Format("yyyy-M-d h:m:s.S") ==> 2006-7-2 8:9:4.18
+  
+    function Format(fmt) { // author: meizz
+        let that = (new Date());
+      var o = {
+        "M+": that.getMonth() + 1, // 月份
+        "d+": that.getDate(), // 日
+        "h+": that.getHours(), // 小时
+        "m+": that.getMinutes(), // 分
+        "s+": that.getSeconds(), // 秒
+        "q+": Math.floor((that.getMonth() + 3) / 3), // 季度
+        "S": that.getMilliseconds() // 毫秒
+      };
+      if (/(y+)/.test(fmt))
+        fmt = fmt.replace(RegExp.$1, (that.getFullYear() + "").substr(4 - RegExp.$1.length));
+      for (var k in o)
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+          return fmt;
+    }
+
+    function msgFliter(textContent){
+        let text = textContent.toString().replace(/<.*?>|<\?.*?php|^\s*/imsg, "");
+        return text;
+    }
+
+</script>
+
+</body>
+</html>
