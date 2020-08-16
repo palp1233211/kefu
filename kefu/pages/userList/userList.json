@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "mp-icon": "../../miniprogram_npm/weui-miniprogram/icon/icon"
+
+  },
+  "useExtendedLib": {
+    "kbone": true,
+    "weui": true
+  }
+}
