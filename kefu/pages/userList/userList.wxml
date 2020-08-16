@@ -1,0 +1,92 @@
+<!--pages/userList/userList.wxml-->
+<view id="chatBox-list">
+<!-- 用户列表  -->
+  <scroll-view scroll-y="true" style="height: 100%;">
+          
+          <view wx:for="{{userList}}" id="chat-list-people" bindtap="usertap" class="scroll-view-item" data-uid='{{item.id}}'>
+            <view id='user-img'>
+              <image class="userinfo-avatar" src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132" mode="cover"></image>
+            </view>
+            <view id="user-name">
+               {{item.name}}<text wx:if="{{item.status}}">(在线)</text><text wx:else>(离线)</text>
+            </view>
+          </view>
+  </scroll-view>
+
+
+  <view id="chatBox-kuang" style="display: {{chatBoxKuang}};">
+    <!-- 聊天头部 -->
+    <view id="chatBox-head">
+      <button bindtap="chatClose">返回</button>
+      <view id="ChatInfoName">{{guserInfo.name}}</view>
+    </view>
+    <!-- 聊天页面主题 -->
+    <view id="chatBox-info">
+
+      <scroll-view scroll-y="true" style="height: 100%;" scroll-into-view="{{toView}}"   scroll-with-animation='true'>
+        <view class="clearfloat" wx:for="{{msgList}}" id="item{{index}}">
+          <view class="author-name">
+            {{item.create_date}}
+          </view>
+        <!-- 这里必须用block来判断， 直接在view中判断永远为true，不管条件真假-->
+          <block wx:if="{{item.uid == uid}}">
+            <view  class="right"  >
+              <view class="chat-message">
+              {{item.textContent}}
+              </view>
+              <view class="chat-avatars">
+                <image src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132"></image>
+              </view>
+            </view>
+          </block>
+        
+          <block wx:else>
+            <view class="left"  >
+              <view class="chat-avatars">
+                <image src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132"></image>
+              </view>
+              <view class="chat-message">
+                {{item.textContent}}
+              </view>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+      <!-- <view class="clearfloat">
+        <view class="author-name">
+          2020-08-09 10:05:58
+        </view>
+        <view class="left">
+          <view class="chat-avatars">
+            <image src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132"></image>
+          </view>
+
+          <view class="chat-message">
+          123
+          </view>
+          
+        </view>
+      </view> -->
+
+    </view>
+    <!-- 底部发送消息 -->
+    <view id="chatBox-send"> 
+      <input id="div-textarea" bindinput="bindName"  value='{{textContent}}' >
+      </input>
+      <view id="chat">
+        <button id="chat-fasong" class="btn-default-styles">
+        <mp-icon icon="sticker" color="black" size="{{20}}"></mp-icon>
+        </button>
+        <view id="chat-tuxiang" class="btn-default-styles">
+          <input type="file"  accept="image/jpg,image/jpeg,image/png" name="file" id="inputImage" class="hidden"></input>
+          <mp-icon icon="album" color="black" size="{{20}}"></mp-icon>
+        </view>
+        <button id="chat-fasong" bindtap="send" class="btn-default-styles">
+          <mp-icon icon="previous" color="black" size="{{20}}"></mp-icon>
+        </button>
+      </view>
+    </view>
+  </view>
+
+
+</view>
