@@ -219,6 +219,8 @@
 .chat-list-people>div:nth-of-type(1)>img{
     width: 40px;
     height: 40px;
+    padding: 10px;
+    color: rgba(255, 255, 255, 0.55);
 }
 
 
@@ -294,7 +296,7 @@
 }
 .clearfloat{
     zoom:1;
-    margin: 10px 10px;
+    margin: 25px 10px;
 }
 .clearfloat .right{
     float: right;
@@ -305,6 +307,7 @@
     color: #888;
 }
 
+
 .clearfloat .chat-message{
     max-width: 252px;
     text-align: left;
@@ -313,12 +316,23 @@
     word-wrap:break-word;
     display: inline-block;
     position: relative;
+    
 }
-
-
+.clearfloat .left{
+    position: relative;
+}
+.clearfloat .left .chat-name{
+    position: absolute;
+    font-size: 12px;
+}
 .clearfloat .left .chat-message{
     background: #D9D9D9;
     min-height: 36px;
+    top: 16px;
+}
+
+.clearfloat .left .chat-group{
+    top: 20px;
 }
 .clearfloat .left .chat-message:before{
     position: absolute;
@@ -332,12 +346,27 @@
 
 .clearfloat .right{
     text-align: right;
+    position: relative;
+}
+.clearfloat .right .chat-name{
+    position: absolute;
+    top: 0px;
+    right: 50px;
+    font-size: 12px;
+    text-align: left;
+    width: auto;
+    white-space:nowrap;
 }
 .clearfloat .right .chat-message{
     background: #8c85e6;
     color: #fff;
     text-align: left;
     min-height: 36px;
+    top: 16px;
+}
+
+.clearfloat .right .chat-group{
+    top: 20px;
 }
 .clearfloat .right .chat-message:before{
     position: absolute;
@@ -351,16 +380,16 @@
 
 .clearfloat .chat-avatars{
     display: inline-block;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #eee;
     vertical-align: top;
     overflow: hidden;
 }
 .clearfloat .chat-avatars>img{
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
 }
 .clearfloat .left .chat-avatars{
     margin-right: 10px;
@@ -496,4 +525,31 @@
     .clearfloat .chat-message{
         max-width: 240px;
     }
+}
+
+#search-input{
+    width: 100%;
+}
+#search-input>input{
+    width: 95%;
+    height: 4ex;
+    padding: .5ex 0;
+    background-color: #01AECE;
+    border: 0;
+    padding-left: 5%;
+}
+#search-input>input:hover{
+     border: none;
+
+}
+#search-input>input:focus{
+     border: none;
+     outline:none;
+     background-color: #fff
+}
+#search-show{
+    display: none;
+    width: 100%;
+/*    height: 495px;*/
+    overflow-y: scroll;
 }

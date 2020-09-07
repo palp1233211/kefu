@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/logs/logs",
     "pages/userList/userList"
+    
   ],
   "window":{
     "backgroundTextStyle":"light",

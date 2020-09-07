@@ -19,6 +19,10 @@ Page({
       'IMGMSG':11,//图片消息
       'CLIENTCLOSE':13,//用户离线通知
       'CLIENTCONTENT':14,//用户上线通知
+      'UNREADMSG':15,//未读消息处理
+      'ADDUNREADMSG':16,//未读消息数量+1
+      'DELUNREADMSG':17,//未读消息数量清空
+      'SERVERUNREADNUM' :18, //服务端向客户端发送未读消息数量
       'PINGINTERVAL':20,//心跳检测
     },
     test:2,
@@ -28,13 +32,19 @@ Page({
     token:'',
     username:'',
     socketOpen : false,
+    isgroup:0,//当前聊天对象是否是群聊,1为群组，0为会员
     textContent:'',//用户输入的消息
     guserInfo:{},//目标用户信息
-    userList:[],//用户列表
+    userListAll:[],//展示的用户列表
+    groupListAll:[],//用户加入的群组列表
+    userList:[],//所有的用户列表信息
+    groupList:[],//展示群组列表
     chatBoxKuang:'none',//聊天是否展示
     msgList:[],//保存用户间聊天内容
     toView:'item0',//聊天界面拉到那个位置
-
+    userListStatus:true,//用户列表是否展示
+    userSearchInput:true,//搜素框的展示
+    userSearchName:'',
   },
 
   /**
@@ -177,7 +187,12 @@ Page({
       console.log(data)
       this.message(data)
     });
-
+    wx.onSocketClose((e)=>{
+       //链接建立成功修改链接状态
+       this.setData({
+        socketOpen:false
+      })
+    })
 
   },
   //处理websocket接受到的消息
@@ -201,9 +216,15 @@ Page({
         })
       break;
       case this.data.CODE.SUCCESS:
+        //登录成功，渲染用户，群组列表
         that.setData({
-          userList:e.data
+          userList:e.data.userList,
+          userListAll:e.data.userList,
+          groupList: e.data.groupList,
+          groupListAll: e.data.groupList,
         })
+
+
       break;
       case this.data.CODE.CLIENTCONTENT:
         this.reuser_status(e.uid,1)
@@ -213,6 +234,7 @@ Page({
       break;
       case this.data.CODE.SERVERSETMSG:
         let msgList = [];
+        console.log(e.data)
         //与目标用户的历史聊天记录
         e.data.forEach((item)=>{
          msgList.push(JSON.parse(item));
@@ -245,26 +267,32 @@ Page({
       case this.data.CODE.PINGINTERVAL:
         //心跳数据无需处理
         break;
+      case this.data.CODE.SERVERUNREADNUM:
+        //服务器发送过来的未读消息数量
+
+       this.unread_num(e.isgroup,e.gid,e.unread);
+        break
     }
   },
   //修改在线用户状态
   reuser_status:function( id,user_status=0){
-      let userList = this.data.userList;
+      let userListAll = this.data.userListAll;
       let that = this;
       if(!id){
         console.log('没有接受到用户id');
         return;
       }
-      if(userList){
+      if(userListAll){
         //修改用户列表中的用户状态
-        userList.forEach((item)=>{
+        userListAll.forEach((item)=>{
           if( item.id == id){
               item.status = user_status;
             return;
           }
         })
         that.setData({
-          userList:userList
+          userListAll:userListAll,
+          userList:userListAll
         })
       }
       
@@ -277,29 +305,61 @@ Page({
   },
   //当用户点击某个用户开始聊天的初始化操作
   usertap:function(e){
-    let id = e.currentTarget.dataset.uid;
-    this.data.userList.forEach((e)=>{
-      if(e.id == id){
-        //保存目标用户信息
-        this.setData({
-          guserInfo: e
-        })
-        console.log(this.data.guserInfo)
-        //展示聊天页面
-        this.setData({
-          chatBoxKuang:'block',
-        })
-        //保存与目标用户的聊天消息
-        this.setMsg();
-        return ;
-      }
+    let item = e.currentTarget.dataset.item,
+        isgroup =  e.currentTarget.dataset.isgroup,
+        that = this;
+    //隐藏用户搜索框
+    that.setData({
+      userSearchInput:false,
+      isgroup:isgroup,
     })
+    that.setData({
+      guserInfo: item
+    })
+    //展示聊天页面
+    that.setData({
+      chatBoxKuang:'block',
+    })
+    //获取与目标用户的聊天记录
+    that.setMsg();
+    //清空与好友的聊天未读消息数量
+    let data = {
+      code:that.data.CODE.UNREADMSG,
+      uid:that.data.uid,
+      gid:that.data.guserInfo.id,
+      type:that.data.CODE.DELUNREADMSG,
+      isgroup:isgroup,
+    };
+    that.sendSocket(data)
+  },
+      /**
+     * 未读消息数量+1
+     */
+     unreadMsg:function(uid,gid,type,isgroup){
+      //如果uid 或gid不存在则不处理
+      if (!uid && !gid) {
+          console.log('有数据不存在')
+          return  ;
+      }
+      if (this.data.socketOpen) {
+          let data = {code:this.data.CODE.UNREADMSG,uid,gid,type,isgroup};
+          console.log(data)
+          console.log(456)
+          //调用发送消息方法
+          this.sendSocket(data)
+      }
   },
   //关闭聊天页面
   chatClose:function(){
+
+
+    //显示用户搜索框
     this.setData({
-      chatBoxKuang:'none',
+      userSearchInput:true,
+      userList:this.data.userListAll,
+      groupList:this.data.groupListAll
     })
+
     //清空历史聊天记录
     this.setData({
       msgList:[],
@@ -308,18 +368,30 @@ Page({
     this.setData({
       textContent:''
     })
+    //清空与好友的聊天未读消息数量
+    let data = {
+      code:this.data.CODE.UNREADMSG,
+      uid:this.data.uid,
+      gid:this.data.guserInfo.id,
+      type:this.data.CODE.DELUNREADMSG,
+      isgroup:this.data.isgroup
+    };
+    this.sendSocket(data)
+    // 数据初始化
+    this.setData({
+      chatBoxKuang:'none',
+      isgroup:0,
+    })
   },
   //获取与目标用户的聊天记录
   setMsg:function(){
-    let uid = this.data.uid;
-    let gid = this.data.guserInfo.id;
-    let data = {code:this.data.CODE.CLIENTGETMSG,uid,gid};
+    let uid = this.data.uid,
+        gid = this.data.guserInfo.id,
+        isgroup = this.data.isgroup,
+        data = {code:this.data.CODE.CLIENTGETMSG,uid,gid,isgroup};
     console.log(data)
     //开始发送
     this.sendSocket(data)
-    // wx.sendSocketMessage({
-    //   data:JSON.stringify(data)
-    // })
   },
   //发送文本消息
   send:function(){
@@ -329,11 +401,13 @@ Page({
       code:this.data.CODE.CLIENTMSG,
       uid:this.data.uid,
       gid:this.data.guserInfo.id,
+      uname:this.data.username,
       textContent:textContent,
       type:this.data.CODE.TEXTMSG,
       create_date:time,
+      isgroup:this.data.isgroup,
     };
-
+    //消息过滤
     if  (!this.msgFilter(data)){
       console.log('数据不合法')
       return;
@@ -358,15 +432,102 @@ Page({
       toView:`item${msgList.length-1}`
     })
     console.log(this.data.toView,456)
-    
+    //未读消息++1
+    this.unreadMsg(data.uid,data.gid,this.data.CODE.ADDUNREADMSG,this.data.isgroup);
     // wx.sendSocketMessage({
     //   data:JSON.stringify(data)
     // });
 
   },
 
+
+
+
+//发送图片
+sendImg:function(){
+  let that = this;
+  console.log(545145145)
+  wx.chooseImage({
+    count:1,
+    success (res) {
+      const tempFilePaths = res.tempFilePaths
+      wx.uploadFile({
+        url: 'http://lc.gloryfs.com/upload', //仅为示例，非真实的接口地址
+        filePath: tempFilePaths[0],
+        name: 'file',
+        success (res){
+          let data = res.data,
+              imgInfo = JSON.parse(data);
+          if(imgInfo.code == 2000){
+            let textContent = imgInfo.data,
+                time = that.Format('yyyy-MM-dd hh:mm:ss'),
+                data = {
+                  code:that.data.CODE.CLIENTMSG,
+                  uid:that.data.uid,
+                  gid:that.data.guserInfo.id,
+                  uname:that.data.username,
+                  textContent:textContent,
+                  type:that.data.CODE.IMGMSG,
+                  create_date:time,
+                  isgroup:that.data.isgroup,
+                };
+                console.log(textContent)
+              //消息过滤
+              if  (!that.msgFilter(data)){
+                console.log('数据不合法')
+                return;
+              }
+              //开始发送
+              that.sendSocket(data)
+
+              let msgList = that.data.msgList
+              msgList.push(data);
+              
+              //聊天历史追加消息
+              that.setData({
+                msgList:msgList
+              })
+              //清空输入框数据
+              that.setData({
+                textContent:''
+              })
+              //设置滚动条的位置
+              that.setData({
+                toView:`item${msgList.length-1}`
+              })
+              console.log(that.data.toView,456)
+              //未读消息++1
+              that.unreadMsg(data.uid,data.gid,that.data.CODE.ADDUNREADMSG,that.data.isgroup);
+          }else{
+            wx.showToast({
+              title: '发送失败',
+              icon: 'none',
+              duration: 1000
+            })
+          }
+        }
+      })
+    },
+    fail(){
+      console.log('调取失败')
+    }
+  })
+},
+
+
+
+
+
+
+
+
+
+
+
+
   //发送socket消息
   sendSocket:function(data){
+    console.log(JSON.stringify(data))
     if(this.data.socketOpen ){
       wx.sendSocketMessage({
         data:JSON.stringify(data)
@@ -411,7 +572,78 @@ Page({
 				return false;
       }
       return true;
-  }
+  },
+  //搜素列表展示
+  userSearch:function(e){
+    //保存搜索的值
+    let text = e.detail.value,
+        userSearchList = [],
+        groupSearchList = [];
+    this.setData({
+      userSearchName: text
+    })
+
+    //搜索的数据为空时，
+    if  (text == ''){
+      this.setData({
+        userList:this.data.userListAll,
+        groupList:this.data.groupListAll
+      })
+      return;
+    }
+
+    text = text.replace(/(\()/g,'\\(')
+    text = text.replace(/(\))/g,'\\)')
+    console.log(text)
+    let page =new RegExp(text)
+    this.data.userList.forEach(function(item){
+      if (page.test(item.name)) {
+        userSearchList.push(item)
+      }
+    })
+    this.data.groupList.forEach(function(item){
+      if (page.test(item.name)) {
+        groupSearchList.push(item)
+      }
+    })
+
+
+    this.setData({
+      userList:userSearchList,
+      groupList:groupSearchList,
+    })
+
+
+
+  },
+  // //服务器发送过来的未读消息数量
+   unread_num:function (isgroup,Gid,unread=0){
+     let userList = isgroup==1 ? this.data.groupListAll : this.data.userListAll;
+     let that=this;
+     userList.forEach(function(item){
+       if (Gid == item.id){
+          if (Gid != that.data.guserInfo.gid) {
+            item.unread=unread;
+          }else{
+            item.unread=0;
+          }
+       }
+       //同时修改，所有的用户列表，和当前展示的用户列表
+       if(isgroup != 1){
+          that.setData({
+            userListAll:userList,
+            userList:userList
+          })
+       }else{
+          that.setData({
+            groupListAll:userList,
+            groupList:userList
+          })
+       }
+       
+
+     })
+    }
   
 
   

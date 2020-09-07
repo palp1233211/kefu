@@ -37,6 +37,15 @@
             </div>
         </div>
         <div class="chatBox-info">
+            <!-- 用户搜索 -->
+             <div id="chatBox-search">
+                <div id="search-input">
+                    <input type="text"   oninput="userSearch(this)" name="search" placeholder="搜索">
+                </div>
+                <div  id="search-show" >
+                    
+                </div>
+            </div>
             <div class="chatBox-list" ref="chatBoxlist" id="userList">
 
                <!--  <div class="chat-list-people">
@@ -144,7 +153,13 @@
                         </ul>
                     </div>
                 </div>
+
+
+
             </div>
+
+            
+           
         </div>
     </div>
 </div>
@@ -153,13 +168,17 @@
 
 <script>
     
-    let uid       = getCookie('id');
-    let name      = getCookie('name');
-    let identity  = getCookie('identity');
-    let username  = getCookie('username');
-    let token     = getCookie('token'); 
-    let gid       = 0;
-    let is_socket = false ;//socket是否建立成功
+    let      uid  = getCookie('id'),
+        name      = getCookie('name'),
+        identity  = getCookie('identity'),
+        username  = getCookie('username'),
+        token     = getCookie('token'),
+        gid       = 0,
+        is_socket = false,  //socket是否建立成功
+        userList  = [], //用户列表
+        groupList =[],  //群列表
+        isgroup    = 0;  //判断点击的是否是群聊
+
     if (username) {
         $('#username').text(username);
     } 
@@ -168,8 +187,8 @@
         'SUCCESS':1, //成功
         'ERROR':0, //失败
         'ISLOGIN':3,//验证登录
-        'SERVERMSG':4,//接收服务端文本消息
-        'CLIENTMSG':5,//客户端发送文本消息
+        'SERVERMSG':4,//接收服务端消息
+        'CLIENTMSG':5,//客户端发送消息
         'CLIENTGETMSG':6,//客户端发送获取用户间的历史聊天记录的请求
         'SERVERSETMSG':7,//服务端发送用户间的历史聊天消息
         'ISKICKED':8,//验证用户是否已经被踢
@@ -178,8 +197,19 @@
         'IMGMSG':11,//图片消息
         'CLIENTCLOSE':13,//用户离线通知
         'CLIENTCONTENT':14,//用户上线通知
+        'UNREADMSG':15,//未读消息处理
+        'ADDUNREADMSG':16,//未读消息数量+1
+        'DELUNREADMSG':17,//未读消息数量清空
+        'SERVERUNREADNUM' :18, //服务端向客户端发送未读消息数量
         'PINGINTERVAL'  :20, //心跳检测
 
+        // 'CLIENTGETGROUPMSG':31,//客户端发送获取群聊的历史聊天记录的请求
+        // 'SERVERSETGROUPMSG':32,//服务端发送群聊的历史聊天消息
+        // 'SERVERGROUPMSG':33,//接收服务端 群聊 消息
+        // 'CLIENTGROUPMSG':34,//客户端发送 群聊 消息 
+        // 'UNREADGROUPMSG':35,//未读消息处理
+        // 'ADDUNREADGROUPMSG':36,//未读消息数量+1
+        // 'DELUNREADGROUPMSG':37,//未读消息数量清空
     };
 
     function getCookie(cname)
@@ -199,7 +229,7 @@
     ws.onopen = function()
     {
       // Web Socket 已连接上，使用 send() 方法发送数据
-      let data = {'key':name,'uid':uid,code:CODE.ISLOGIN,identity};
+          let data = {'key':name,'uid':uid,code:CODE.ISLOGIN,identity};
       console.log(data)
       ws.send(JSON.stringify(data));
       //建立成功改变is_socket状态
@@ -209,6 +239,7 @@
     ws.onmessage = function (evt) 
     { 
       var received_msg = JSON.parse(evt.data);
+      console.log(received_msg)
       switch (+received_msg.code) {
             case CODE.ERROR:
                 //用户未登录
@@ -217,36 +248,25 @@
                 relogin();
                 break;
             case CODE.SUCCESS:
-                let str = '';
-                console.log(received_msg.data)
-                received_msg.data.forEach(function(item){
-                    str += '<div class="chat-list-people">'+
-                    '<div><img src="/web/img/icon01.png" alt="头像"/></div>'+
-                    '<div class="chat-name">'+
-                    '    <p id=user_'+ item.id +'>'+item.name ;
+                //用户列表渲染
+                groupList = received_msg.data.groupList;
+                //用户列表渲染
+                userList = received_msg.data.userList;
+                rendering(userList,"#userList")
 
-                    if (item.status == 1) {
-                        str += '(在线)'
-                    }else{
-                        str += '(离线)'
-                    }
+                
+                // renderingGroup(groupList,"#userList")
 
-                    str += '</p>'+
-                        '<input type="hidden" value="'+item.id+'">'+
-                    '</div>'+
-                    '<div class="message-num">10</div>'+
-                    '</div>'
-                })
-               
-                $("#userList").append(str)
-                //添加点击事件
-                clickPeople();
                 break;
             case CODE.SERVERMSG:
+                //接收服务端文本消息
                 console.log(received_msg)
                 
                 if (received_msg.type == CODE.TEXTMSG) {
                     text_msg(received_msg)
+                }
+                if (received_msg.type == CODE.IMGMSG) {
+                    img_msg(received_msg)
                 }
                 break;
             case CODE.SERVERSETMSG:
@@ -265,6 +285,11 @@
                 break;
             case CODE.PINGINTERVAL:
                 //心跳数据无需处理
+                break;
+            case CODE.SERVERUNREADNUM:
+                //服务端发送过来的未读消息数量
+                unread_num(received_msg.gid,received_msg.isgroup,received_msg.unread);
+                console.log('我进来啦')
                 break;
         }
         
@@ -353,14 +378,25 @@
                 $(document).ready(function () {
                     $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
                 });
-                
+                //当前聊天对象是否是群聊
+                isgroup = $(this).children(".isgroup").eq(0).val()
+
+                console.log('isgroup',isgroup)
                 if (is_socket) {
-                    let data = {code:CODE.CLIENTGETMSG,uid,gid};
-                    console.log(data)
+                    //用户间处理
+                    //获取聊天记录
+                    let data = {code:CODE.CLIENTGETMSG,uid,gid,isgroup};
+                    // console.log(data)
                     ws.send(JSON.stringify(data));
+                    //清空与好友的未读消息数量
+                    let unreadData = {code:CODE.UNREADMSG,uid,gid,type:CODE.DELUNREADMSG,isgroup};
+                    ws.send(JSON.stringify(unreadData));
                 }
                 
-
+                //隱藏搜索框,和搜索用户列表
+                $('#search-input').css('display','none')
+                // $('#search-show').fadeToggle()
+                // $('.chatBox-list').css('display','none')
             })
         });
     }
@@ -374,25 +410,51 @@
         $(".chatBox-head-two").toggle(1);
         $(".chatBox-list").fadeToggle(1);
         $(".chatBox-kuang").fadeToggle(1);
+        let data = {code:CODE.UNREADMSG,uid,gid,type:CODE.DELUNREADMSG,isgroup};
+                console.log(data)
+        ws.send(JSON.stringify(data));
+        //隱藏搜索框,和搜索用户列表
+        $('#search-input').css('display','block')
+        //用户列表渲染
+        rendering(userList,"#userList")     
+        $('#search-input >input').val('')
+        //判断点击的是否是群聊的标识初始化
+        isgroup = 0;
+        //清空当前聊天用户id
+        gid = 0;
+        console.log(gid,'返回')
     });
 
     //      发送信息
     $("#chat-fasong").click(function () {
         var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
         textContent = msgFliter(textContent)
-        let create_date = Format('yyyy-MM-dd hh:mm:ss')
+        let create_date = Format('yyyy-MM-dd hh:mm:ss'),
+            chat_group = '',
+            text = '';
         if (textContent != "") {
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+            text = "<div class=\"clearfloat\">" +
                 "<div class=\"author-name\"><small class=\"chat-date\">"+ create_date +"</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"> " + textContent + " </div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+                "<div class=\"right\"> " ;
+            if (isgroup == 1) {
+                   text +=  "<span class='chat-name'>" + username + "</span>"
+                   chat_group = 'chat-group'
+            }
+                text +=  " <div class=\"chat-message  "+chat_group+"\"> " + textContent + " </div><div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
+
+            $(".chatBox-content-demo").append(text);
+
             //发送后清空输入框
             $(".div-textarea").html("");
             
             if (is_socket) {
-                let data = {code:CODE.CLIENTMSG,uid,gid,textContent,type:CODE.TEXTMSG,create_date};
+                let data = {code:CODE.CLIENTMSG,uid,gid,textContent,type:CODE.TEXTMSG,create_date,isgroup,uname:username};
+                console.log('发送data')
                 console.log(data)
+
                 ws.send(JSON.stringify(data));
+                //未读消息++1
+                unreadMsg(uid,gid,CODE.ADDUNREADMSG,isgroup);
             }
 
             //聊天框默认最底部
@@ -437,13 +499,32 @@
         if (!pic.files || !pic.files[0]) {
             return;
         }
+        let create_date = Format('yyyy-MM-dd hh:mm:ss'),
+            chat_group = '',
+            text = '';
         var reader = new FileReader();
         reader.onload = function (evt) {
             var images = evt.target.result;
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+
+            text = "<div class=\"clearfloat\">" +
                 "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"><img src=" + images + "></div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+                "<div class=\"right\"> "
+            if (isgroup == 1) {
+                text +=  "<span class='chat-name'>" + username + "</span>"
+                chat_group = 'chat-group'
+            }
+            text += "<div class=\"chat-message\""+chat_group+"><img src=" + images + "></div> " +
+            "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
+            $(".chatBox-content-demo").append(text);
+            if (is_socket) {
+                let data = {code:CODE.CLIENTMSG,uid,gid,textContent:images,type:CODE.IMGMSG,create_date,isgroup,uname:username};
+                console.log('发送data')
+                console.log(data)
+                ws.send(JSON.stringify(data));
+                //未读消息++1
+                unreadMsg(uid,gid,CODE.ADDUNREADMSG,isgroup);
+            }
+
             //聊天框默认最底部
             $(document).ready(function () {
                 $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
@@ -471,6 +552,9 @@
             if (item.type == CODE.TEXTMSG) {
                 text_msg(item)
             }
+            if (item.type == CODE.IMGMSG) {
+                img_msg(item)
+            }
             $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
 
         })
@@ -478,33 +562,58 @@
     //渲染文本消息
     function text_msg(item){
         console.log(item)
+        let text = ''
+        let chat_group = '';
         if (item.uid == uid) {
-                $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                text = "<div class=\"clearfloat\">" +
                 "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"> " + item.textContent + " </div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+                "<div class=\"right\"> ";
+                if (item.isgroup == 1) {
+                   text +=  "<span class='chat-name'>" + item.uname + "</span>"
+                   chat_group = 'chat-group'
+                }
+                text += " <div class=\"chat-message "+chat_group+"\"> " + item.textContent + " </div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
             }else{
-                 $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+                text = "<div class=\"clearfloat\">" +
                 "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
-                "<div class=\"left\"> <div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div><div class=\"chat-message\"> " + item.textContent + " </div> " +
-                " </div> </div>");
+                "<div class=\"left\"> <div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div>"
+                if (item.isgroup == 1) {
+                   text +=  "<span class='chat-name'>" + item.uname  + "</span>"
+                   chat_group = 'chat-group'
+                }
+                text += "<div class=\"chat-message "+chat_group+"\"> " + item.textContent + " </div> " +
+                " </div> </div>";
             }
+             $(".chatBox-content-demo").append(text)
     }
     //渲染图片消息
     function img_msg(item){
+        let text = ''
+        let chat_group = '';
         console.log(item)
         if (item.uid == uid) {
-                $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
+            text = "<div class=\"clearfloat\">" +
                 "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"><img src=" + item.textContent + "></div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
-            }else{
-                 $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
-                "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
-                "<div class=\"left\"><div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> " +
-                "<div class=\"chat-message\"><img src=" +  item.textContent  + "></div> " +
-                " </div> </div>");
+                "<div class=\"right\"> "
+            if (item.isgroup == 1) {
+                text +=  "<span class='chat-name'>" + item.uname  + "</span>"
+                chat_group = 'chat-group'
             }
+            text += "<div class=\"chat-message\""+chat_group+"><img src=" + item.textContent + "></div> " +
+                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
+            }else{
+                text = "<div class=\"clearfloat\">" +
+                    "<div class=\"author-name\"><small class=\"chat-date\">" + item.create_date + "</small> </div> " +
+                    "<div class=\"left\"> <div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div>"
+                if (item.isgroup == 1) {
+                    text +=  "<span class='chat-name'>" + item.uname  + "</span>"
+                    chat_group = 'chat-group'
+                }
+                text += "<div class=\"chat-message\""+chat_group+"><img src=" + item.textContent + "></div> " +
+                    " </div> </div>";
+            }
+        $(".chatBox-content-demo").append(text);
     }
     //退出登录
     function relogin(){
@@ -544,6 +653,7 @@
                 }
             })
         if(is_socket){
+            console.log(is_socket)
             ws.send(data);
         }
         
@@ -575,7 +685,7 @@
   
     function Format(fmt) { // author: meizz
         let that = (new Date());
-      var o = {
+          var o = {
         "M+": that.getMonth() + 1, // 月份
         "d+": that.getDate(), // 日
         "h+": that.getHours(), // 小时
@@ -590,11 +700,145 @@
         if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
           return fmt;
     }
-
+    /**
+     * 消息过滤
+     * @param  {[type]} textContent [description]
+     * @return {[type]}             [description]
+     */
     function msgFliter(textContent){
-        let text = textContent.toString().replace(/<.*?>|<\?.*?php|^\s*/imsg, "");
+        let text = textContent.toString().replace(/<.*?>|<\?.*?php|^\s*/img, "");
         return text;
     }
+
+    /**
+     * 未读消息数量+1
+     */
+    function unreadMsg(uid,gid,type,isgroup){
+        //如果uid 或gid不存在则不处理
+        if (!uid && !gid) {
+            console.log('有数据不存在')
+            return  ;
+        }
+        if (is_socket) {
+            let data = {code:CODE.UNREADMSG,uid,gid,type,isgroup};
+            console.log(data)
+            console.log(456)
+            ws.send(JSON.stringify(data));
+        }
+    }
+
+    function unread_num(Gid,isgroup=0,unread=0){
+
+        let prefix = isgroup == 1 ? '#group_' : '#user_'
+        console.log(Gid,isgroup,unread,prefix+Gid)
+        console.log(Gid,gid)
+
+        if (Gid != gid) {
+            $(prefix+Gid).parent('.chat-name').next('.message-num').html(unread);
+        }else{
+            $(prefix+Gid).parent('.chat-name').next('.message-num').html(0);
+        }
+         
+        
+    }
+    /**
+     * 用户搜索处理
+     * @param  {[type]} e [description]
+     * @return {[type]}   [description]
+     */
+    function userSearch(e){
+        let text = $(e).val(),
+            userSearchList = [];
+
+        if (  text == ''  ) {
+            //用户列表渲染
+            rendering(userList,"#userList")
+            return;
+        }
+        text = text.replace(/(\()/g,'\\(')
+        text = text.replace(/(\))/g,'\\)')
+        console.log(text)
+            let page =new RegExp(text)
+        userList.forEach(function(item){
+
+            if (page.test(item.name)) {
+                userSearchList.push(item)
+            }
+        })
+
+        console.log(userSearchList)
+
+        //用户列表渲染
+        rendering(userSearchList,"#userList")
+
+    }
+    /**
+     * 渲染用户列表
+     * @param  {[type]} data [description]
+     * @param  {[type]} node [description]
+     * @return {[type]}      [description]
+     */
+    function rendering(data,node){
+        let str = ''
+        data.forEach(function(item){
+            if ( !item.hasOwnProperty('id') ||  !item.hasOwnProperty('name')){
+                return
+            }
+            str += '<div class="chat-list-people">'+
+            '<div><img src="/web/img/icon01.png" alt="头像"/></div>'+
+            '<div class="chat-name">'+
+            '    <p id=user_'+ item.id +'>'+item.name ;
+
+            if (item.status == 1) {
+                str += '(在线)'
+            }else{
+                str += '(离线)'
+            }
+
+            str += '</p>'+
+                '<input type="hidden" value="'+item.id+'">'+
+            '</div>'+
+            '<div class="message-num">'+item.unread+'</div>'+
+            '<input type="hidden" class="isgroup" value="0">'+
+            
+            '</div>'
+        })
+        $(node).html('')
+        $(node).append(str)
+        //渲染群列表，全局groupList变量在接受用户列表时被赋值
+        renderingGroup(groupList,"#userList")
+        //添加点击事件，在renderingGroup()中进行统一添加，重复添加会出问题
+        // clickPeople();
+    }
+    /**
+     * 渲染群列表
+     * @param  {[type]} data [description]
+     * @param  {[type]} node [description]
+     * @return {[type]}      [description]
+     */
+    function renderingGroup(data,node){
+        console.log(data)
+        let str = ''
+        $.each(data,function(key,item){
+            console.log(item)
+            if ( item.hasOwnProperty('id') &&  item.hasOwnProperty('name')){
+                str += '<div class="chat-list-people">'+
+                    '<div><img src="/web/img/icon01.png" alt="头像"/></div>'+
+                    '<div class="chat-name">'+
+                    '    <p id=group_'+ item.id +'>'+ item.name +'</p>'+
+                    '<input type="hidden" value="'+item.id+'">'+
+                    '</div>'+
+                    '<div class="message-num">'+ item.unread +'</div>'+
+                    '<input type="hidden" class="isgroup" value="1">'+
+                    '</div>'
+            }
+        })
+        console.log(str)
+        $(node).prepend(str)
+        //添加点击事件
+        clickPeople();
+    }
+
 
 </script>
 

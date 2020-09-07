@@ -1,17 +1,43 @@
 <!--pages/userList/userList.wxml-->
 <view id="chatBox-list">
 <!-- 用户列表  -->
-  <scroll-view scroll-y="true" style="height: 100%;">
-          
-          <view wx:for="{{userList}}" id="chat-list-people" bindtap="usertap" class="scroll-view-item" data-uid='{{item.id}}'>
+  <view id="search" wx:if="{{userSearchInput}}"> 
+    <mp-icon type="field" icon="search" color="#8f8f8f" size="{{25}}"></mp-icon>
+    <input id="search-input" bindinput="userSearch" placeholder="搜索" value='{{userUnme}}'  ></input>
+  </view>
+    <!-- 群组列表 -->
+    <scroll-view scroll-y="true" style="height: 100%;">
+          <view wx:for="{{groupList}}" id="chat-list-people" bindtap="usertap" class="scroll-view-item" data-item='{{item}}' data-isgroup="1">
             <view id='user-img'>
-              <image class="userinfo-avatar" src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132" mode="cover"></image>
+              <image class="userinfo-avatar" src="http://lc.gloryfs.com{{item.img}}" mode="cover"></image>
             </view>
             <view id="user-name">
-               {{item.name}}<text wx:if="{{item.status}}">(在线)</text><text wx:else>(离线)</text>
+               {{item.name}}
+               
+            </view>
+            <view id="message-num" wx:if="{{item.unread > 0}}">
+            {{item.unread}}
             </view>
           </view>
-  </scroll-view>
+    </scroll-view>
+    <!-- 用户列表 -->
+    <scroll-view scroll-y="true" style="height: 100%;">
+          <view wx:for="{{userList}}" id="chat-list-people" bindtap="usertap" class="scroll-view-item" data-item='{{item}}'  data-isgroup="0">
+          <view  wx:if="item.hasOwnProperty('id') && item.hasOwnProperty('name')">
+              <view id='user-img'>
+              <image class="userinfo-avatar" src="http://lc.gloryfs.com{{item.img}}" mode="cover"></image>
+              </view>
+              <view id="user-name">
+                {{item.name}}<text wx:if="{{item.status}}">(在线)</text><text wx:else>(离线)</text>
+              </view>
+              <view id="message-num" wx:if="{{item.unread > 0}}">
+              {{item.unread}}
+              </view>
+          </view>
+          </view>
+    </scroll-view>
+
+
 
 
   <view id="chatBox-kuang" style="display: {{chatBoxKuang}};">
@@ -32,10 +58,15 @@
           <block wx:if="{{item.uid == uid}}">
             <view  class="right"  >
               <view class="chat-message">
+                <block wx:if="{{item.type == CODE.IMGMSG}}">
+                  <image id="imgContent" src="http://lc.gloryfs.com{{item.textContent}}"></image>
+                </block>
+              <block wx:else>
               {{item.textContent}}
+              </block>
               </view>
               <view class="chat-avatars">
-                <image src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132"></image>
+                <image src="http://lc.gloryfs.com{{item.img}}"></image>
               </view>
             </view>
           </block>
@@ -43,10 +74,16 @@
           <block wx:else>
             <view class="left"  >
               <view class="chat-avatars">
-                <image src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132"></image>
+                <image  src="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eqWgkeEN6qgdCF4HoGriaT7tWBodLmGPydlTGw8guIMlkC2e03RKlibCPUIGRicoia1roFd9NOuiaaASow/132"></image>
+               
               </view>
               <view class="chat-message">
+                <block wx:if="{{item.type == CODE.IMGMSG}}">
+                  <image id="imgContent" src="http://lc.gloryfs.com{{item.textContent}}"></image>
+                </block>
+                <block wx:else>
                 {{item.textContent}}
+                </block>
               </view>
             </view>
           </block>
@@ -77,8 +114,7 @@
         <button id="chat-fasong" class="btn-default-styles">
         <mp-icon icon="sticker" color="black" size="{{20}}"></mp-icon>
         </button>
-        <view id="chat-tuxiang" class="btn-default-styles">
-          <input type="file"  accept="image/jpg,image/jpeg,image/png" name="file" id="inputImage" class="hidden"></input>
+        <view id="chat-tuxiang" class="btn-default-styles"  bindtap="sendImg">
           <mp-icon icon="album" color="black" size="{{20}}"></mp-icon>
         </view>
         <button id="chat-fasong" bindtap="send" class="btn-default-styles">
